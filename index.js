@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
 
@@ -10,8 +11,9 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.dprcj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
-
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.dprcj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+// console.log(uri);
+const uri = `mongodb+srv://doctor_admin:R8I40v3joSU1NfDf@cluster0.dprcj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -36,6 +38,7 @@ async function run() {
       res.send(services);
     });
 
+    // user creation
     app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -44,12 +47,13 @@ async function run() {
       const updatedDoc = {
         $set: user,
       };
-      const result = await productsCollection.updateOne(
+      const result = await userCollection.updateOne(
         filter,
         updatedDoc,
         options
       );
-      res.send(result);
+      const token = jwt.sign({ email: email }, "sujon", { expiresIn: "1h" });
+      res.send({ result, token });
     });
 
     // warning
