@@ -3,6 +3,8 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
+var nodemailer = require("nodemailer");
+var sgTransport = require("nodemailer-sendgrid-transport");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -33,6 +35,15 @@ function verifyJWT(req, res, next) {
     req.decoded = decoded;
     next();
   });
+}
+
+function sendAppointmentEmail(email, name, date, slot) {
+  var options = {
+    auth: {
+      api_user: "SENDGRID_USERNAME",
+      api_key: "SENDGRID_PASSWORD",
+    },
+  };
 }
 
 async function run() {
@@ -168,6 +179,12 @@ async function run() {
         return res.send({ success: false, booking: exists });
       }
       const result = await bookingCollection.insertOne(booking);
+      sendAppointmentEmail(
+        booking.patient,
+        booking.patientName,
+        booking.date,
+        booking.slot
+      );
       return res.send({ success: true, result });
     });
 
