@@ -27,8 +27,8 @@ function verifyJWT(req, res, next) {
     return res.status(401).send({ message: "Unauthorized access" });
   }
   const token = authHeader.split(" ")[1];
-  // jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-  jwt.verify(token, "sujon", function (err, decoded) {
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    // jwt.verify(token, "sujon", function (err, decoded) {
     if (err) {
       return res.status(403).send({ message: "Forbidden access" });
     }
@@ -145,9 +145,9 @@ async function run() {
       );
       const token = jwt.sign(
         { email: email },
-        // process.env.ACCESS_TOKEN_SECRET,
-        "sujon",
-        { expiresIn: "1h" }
+        process.env.ACCESS_TOKEN_SECRET,
+        // "sujon",
+        { expiresIn: "1d" }
       );
       res.send({ result, token });
     });
