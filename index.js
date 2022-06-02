@@ -4,7 +4,8 @@ const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 var nodemailer = require("nodemailer");
-var sgTransport = require("nodemailer-sendgrid-transport");
+// var sgTransport = require("nodemailer-sendgrid-transport");
+const mg = require("nodemailer-mailgun-transport");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
@@ -38,74 +39,83 @@ function verifyJWT(req, res, next) {
   });
 }
 
-const emailSenderOptions = {
+const auth = {
   auth: {
-    api_key: process.env.EMAIL_SENDER_KEY,
+    api_key: "cbd302d1fdfe7fe20c215aaca8c6c3c6-27a562f9-d0ce36d0",
+    domain: "sandbox3dbfd5f0c2ee479791ce1831fd335585.mailgun.org",
   },
 };
 
-const emailClient = nodemailer.createTransport(sgTransport(emailSenderOptions));
+const nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
-function sendAppointmentEmail(booking) {
-  const { patient, patientName, treatment, date, slot } = booking;
+// const emailSenderOptions = {
+//   auth: {
+//     api_key: process.env.EMAIL_SENDER_KEY,
+//   },
+// };
 
-  var email = {
-    from: process.env.EMAIL_SENDER,
-    to: patient,
-    subject: `Your Appointment for ${treatment} in on ${date} at ${slot} is Confirmed`,
-    text: `Your Appointment for ${treatment} in on ${date} at ${slot} is Confirmed`,
-    html: `
-    <div>
-      <p> Hello ${patientName}, </p>
-      <h3>Your Appointment for ${treatment} is confirmed</h3>
-      <p>Looking forward to seeing you on ${date} at ${slot}.</p>
+// const emailClient = nodemailer.createTransport(sgTransport(emailSenderOptions));
 
-      <h3>Our Address</h3>
-      <p>DB Road, Gaibandha</p>
-      <p>Bangladesh</p>
-      <a href="https://web.programming-hero.com/">unsubscribe</a>
-    </div>
-    `,
-  };
+// function sendAppointmentEmail(booking) {
+//   const { patient, patientName, treatment, date, slot } = booking;
 
-  emailClient.sendMail(email, function (err, info) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("Message sent: ", info);
-    }
-  });
-}
-function sendPaymentConfirmationEmail(booking) {
-  const { patient, patientName, treatment, date, slot } = booking;
+//   var email = {
+//     from: process.env.EMAIL_SENDER,
+//     to: patient,
+//     subject: `Your Appointment for ${treatment} in on ${date} at ${slot} is Confirmed`,
+//     text: `Your Appointment for ${treatment} in on ${date} at ${slot} is Confirmed`,
+//     html: `
+//     <div>
+//       <p> Hello ${patientName}, </p>
+//       <h3>Your Appointment for ${treatment} is confirmed</h3>
+//       <p>Looking forward to seeing you on ${date} at ${slot}.</p>
 
-  var email = {
-    from: process.env.EMAIL_SENDER,
-    to: patient,
-    subject: `We have received your payment for ${treatment} in on ${date} at ${slot} is Confirmed`,
-    text: `Your payment for this Appointment for ${treatment} in on ${date} at ${slot} is Confirmed`,
-    html: `
-    <div>
-      <p> Hello ${patientName}, </p>
-      <h3>Thank you for your payment.</h3>
-      <h3>We have received your payment.</h3>
-      <p>Looking forward to seeing you on ${date} at ${slot}.</p>
-      <h3>Our Address</h3>
-      <p>DB Road, Gaibandha</p>
-      <p>Bangladesh</p>
-      <a href="https://web.programming-hero.com/">unsubscribe</a>
-    </div>
-    `,
-  };
+//       <h3>Our Address</h3>
+//       <p>DB Road, Gaibandha</p>
+//       <p>Bangladesh</p>
+//       <a href="https://web.programming-hero.com/">unsubscribe</a>
+//     </div>
+//     `,
+//   };
 
-  emailClient.sendMail(email, function (err, info) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("Message sent: ", info);
-    }
-  });
-}
+//   emailClient.sendMail(email, function (err, info) {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       console.log("Message sent: ", info);
+//     }
+//   });
+// }
+// function sendPaymentConfirmationEmail(booking) {
+//   const { patient, patientName, treatment, date, slot } = booking;
+
+//   var email = {
+//     from: process.env.EMAIL_SENDER,
+//     to: patient,
+//     subject: `We have received your payment for ${treatment} in on ${date} at ${slot} is Confirmed`,
+//     text: `Your payment for this Appointment for ${treatment} in on ${date} at ${slot} is Confirmed`,
+//     html: `
+//     <div>
+//       <p> Hello ${patientName}, </p>
+//       <h3>Thank you for your payment.</h3>
+//       <h3>We have received your payment.</h3>
+//       <p>Looking forward to seeing you on ${date} at ${slot}.</p>
+//       <h3>Our Address</h3>
+//       <p>DB Road, Gaibandha</p>
+//       <p>Bangladesh</p>
+//       <a href="https://web.programming-hero.com/">unsubscribe</a>
+//     </div>
+//     `,
+//   };
+
+//   emailClient.sendMail(email, function (err, info) {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       console.log("Message sent: ", info);
+//     }
+//   });
+// }
 
 async function run() {
   try {
@@ -326,6 +336,23 @@ async function run() {
   }
 }
 run().catch(console.dir);
+
+app.get("/email", async (req, res) => {
+  const email = {
+    from: "myemail@example.com",
+    to: "ruhul.amin.sujon.1997@gmail.com",
+    subject: "Hey you, awesome!",
+    text: "Mailgun rocks, pow pow!",
+  };
+  nodemailerMailgun.sendMail(email, (err, info) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(info);
+    }
+  });
+  res.send({ status: true });
+});
 
 app.get("/", (req, res) => {
   res.send("Running `Doctors Portal` Server");
